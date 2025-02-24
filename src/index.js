@@ -1,20 +1,53 @@
-require("dotenv").config();
+//modules
 const express = require("express");
 const cors = require("cors");
-const pool = require("./src/config/db");
-const authRoutes = require("./src/routes/authRoutes");
-const serviceRoutes = require("./src/routes/serviceRoutes");
+const path = require("path");
+const mongoose = require("mongoose");
+require("dotenv").config();
+const PORT = process.env.PORT || 4000;
+//routes
+const usersRouter = require("./router/usersRouter");
+const authRouter = require("./router/authRouter");
+const productsRouter = require("./router/productsRouter");
+const categoriesRouter = require("./router/categoriesRouter");
+const blogsRouter = require("./router/blogsRouter");
+const chatBotRouter = require("./router/chatBotRouter");
+//utils
+const httpRespone = require("./utils/httpRespone");
+
+//connect to DataBase
+const url = process.env.MONGO_URL;
+mongoose
+    .connect(url)
+    .then(() => console.log("connected to mongoBD server"))
+    .catch((err) => console.log("unable to connect to mongoDB server", err));
 
 const app = express();
 
-// Middleware
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/services", serviceRoutes);
+//APIs
+app.use("/api/users", usersRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/products", productsRouter);
+app.use("/api/categories", categoriesRouter);
+app.use("/api/blogs", blogsRouter);
+app.use("/api/chatbot", chatBotRouter);
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+//global middle ware for not found routes
+app.all("*", (req, res, next) => {
+    return res.status(404).json(httpRespone.badResponse(404, "page not found"));
+});
+
+//global error handler
+app.use((error, req, res, next) => {
+    res.status(500).json(
+        httpRespone.badResponse(`internal server error! ${error}!`)
+    );
+});
+
+app.listen(PORT, () => {
+    console.log(`listening on http://localhost on port ${PORT}`);
+});

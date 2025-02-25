@@ -1,3 +1,4 @@
+
 //modules
 const express = require("express");
 const cors = require("cors");
@@ -14,6 +15,8 @@ const httpRespone = require("./utils/httpRespone");
 
 //connect to DataBase
 
+
+// Initialize Express app
 const app = express();
 
 app.use(cors());
@@ -26,18 +29,21 @@ app.use("/api/service", servicesRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
-//global middle ware for not found routes
-app.all("*", (req, res, next) => {
-    return res.status(404).json(httpRespone.badResponse(404, "page not found"));
-});
 
-//global error handler
-app.use((error, req, res, next) => {
-    res.status(500).json(
-        httpRespone.badResponse(`internal server error! ${error}!`)
-    );
-});
+const syncDatabase = async () => {
+    try {
+        await sequelize.sync({ alter: true }); // Sync the database
+        console.log('Database & tables synchronized successfully!');
+    } catch (error) {
+        console.error('Error synchronizing the database:', error);
+    }
+};
 
+// Call the sync function
+syncDatabase();
+
+// Start your server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`listening on http://localhost on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });

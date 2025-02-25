@@ -1,39 +1,40 @@
 // src/models/Services.js
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../db/sequelize.js"); // Adjust the path as needed
 
-class Services {
-    constructor(Service_Type_ID, ServiceName) {
-        this.Service_Type_ID = Service_Type_ID;
-        this.ServiceName = ServiceName;
+const Services = sequelize.define(
+    "Services",
+    {
+        serviceId: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
+        providerServiceId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        serviceObj: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        description: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        initialCheckUpCost: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+        },
+        serviceName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+    },
+    {
+        tableName: "Services", // Specify the table name if different
+        timestamps: false, // Set to true if you want createdAt/updatedAt fields
     }
-
-    // Getters and Setters
-    GetServiceTypeID() {
-        return this.Service_Type_ID;
-    }
-
-    SetServiceTypeID(ID) {
-        if (typeof ID === "number" && ID > 0) {
-            this.Service_Type_ID = ID;
-        } else {
-            console.error(
-                "Invalid Service Type ID. It must be a positive integer."
-            );
-        }
-    }
-
-    GetServiceName() {
-        return this.ServiceName;
-    }
-
-    SetServiceName(Service) {
-        if (typeof Service === "string" && Service.trim().length > 0) {
-            this.ServiceName = Service;
-        } else {
-            console.error(
-                "Invalid Service Name. It must be a non-empty string."
-            );
-        }
-    }
-}
+);
 
 module.exports = { Services };

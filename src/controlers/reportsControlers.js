@@ -1,24 +1,27 @@
-//models
+// models
+const { ServiceReport } = require("../models");
 
-//middlewares
+// middlewares
 const asyncWrapper = require("../middlewares/asyncWrapper");
-//utils
+
+// utils
 const httpResponse = require("../utils/httpRespone");
 
-//get all categories
-const allReports = asyncWrapper(async (req, res) => {
+// Get all reports
+const findAllReports = asyncWrapper(async (req, res) => {
     const query = req.query;
 
-    const limit = query.limit || 10;
-    const page = query.page || 1;
-    const skip = (page - 1) * limit;
+    const limit = parseInt(query.limit, 10) || 10;
+    const page = parseInt(query.page, 10) || 1;
+    const offset = (page - 1) * limit;
 
-    // get all reports from DB
+    // ge reports from DB
+    const reports = await ServiceReport.findAll({ limit, offset });
 
-    res.status(200).json(httpResponse.goodResponse(200, categories));
+    res.status(200).json(httpResponse.goodResponse(200, reports));
 });
 
-//create category
+// Create a report
 const createReport = asyncWrapper(async (req, res) => {
     const {
         ReportID,
@@ -44,13 +47,18 @@ const createReport = asyncWrapper(async (req, res) => {
             .json(httpResponse.badResponse(400, "Invalid data"));
     }
 
-    //  save report to DB
+    // Save to DB
+    const report = await Report.create({
+        ReportID,
+        RequestObj,
+        DateOfReport,
+        FinalServiceCost,
+        RatingValue,
+        Role,
+        Comments,
+    });
 
-    // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
-    }
+    let newToken = req.currentUser?.newAccessToken || null;
 
     res.status(201).json(
         httpResponse.goodResponse(
@@ -62,82 +70,65 @@ const createReport = asyncWrapper(async (req, res) => {
     );
 });
 
-//get one category
+// Get one 
 const oneReport = asyncWrapper(async (req, res) => {
     const reportID = req.params.id;
-    if (!reportID) {
+
+    const report = await Report.findByPk(reportID);
+
+    if (!report) {
         return res
-            .status(400)
-            .json(httpResponse.badResponse(400, "Invalid data"));
+            .status(404)
+            .json(httpResponse.badResponse(404, "Report not found"));
     }
-
-    // check if report exists in DB, if not:
-    // return res
-    //         .status(400)
-    //         .json(httpResponse.badResponse(400, "Invalid data"));
-
-    // get report from DB
 
     res.status(200).json(httpResponse.goodResponse(200, report));
 });
 
-//delete category
+// Delete a report
 const deleteReport = asyncWrapper(async (req, res) => {
     const reportID = req.params.id;
-    if (!reportID) {
+
+    const report = await Report.findByPk(reportID);
+    if (!report) {
         return res
-            .status(400)
-            .json(httpResponse.badResponse(400, "Invalid data"));
+            .status(404)
+            .json(httpResponse.badResponse(404, "Report not found"));
     }
 
-    // check if report exists, if not:
-    // return res
-    // .status(400)
-    // .json(httpResponse.badResponse(400, "Invalid data"));
+    await report.destroy();
 
-    // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
-    }
+    let newToken = req.currentUser?.newAccessToken || null;
 
     res.status(200).json(
         httpResponse.goodResponse(
             200,
-            report,
+            null,
             "Report deleted successfully",
             newToken
         )
     );
 });
 
-//edit || update category
+//update a report
 const editReport = asyncWrapper(async (req, res) => {
     const reportID = req.params.id;
-    if (!reportID) {
-        return res
-            .status(400)
-            .json(httpResponse.badResponse(400, "Invalid data"));
-    }
-
     const newReportData = req.body;
 
-    // check if report exists in DB, if not:
-    // return res
-    //         .status(400)
-    //         .json(httpResponse.badResponse(400, "Invalid data"));
-
-    //  update report data in DB
-
-    // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
+    const report = await Report.findByPk(reportID);
+    if (!report) {
+        return res
+            .status(404)
+            .json(httpResponse.badResponse(404, "Report not found"));
     }
 
-    res.status(201).json(
+    await report.update(newReportData);
+
+    let newToken = req.currentUser?.newAccessToken || null;
+
+    res.status(200).json(
         httpResponse.goodResponse(
-            201,
+            200,
             report,
             "Report updated successfully",
             newToken
@@ -146,7 +137,7 @@ const editReport = asyncWrapper(async (req, res) => {
 });
 
 module.exports = {
-    allReports,
+    findAllReports,
     oneReport,
     deleteReport,
     editReport,

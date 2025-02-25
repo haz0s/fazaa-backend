@@ -2,7 +2,7 @@
 const express = require("express");
 const multer = require("multer");
 //controlers
-const AuthControlers = require("../controlers/AuthControlers.js");
+const AuthControlers = require("../controlers/authControlers.js");
 //middlewares
 const { verifyEmail } = require("../middlewares/verifyEmail.js");
 //utils
@@ -14,12 +14,8 @@ const diskStorage = multer.diskStorage({
         cb(null, "uploads/users");
     },
     filename: function (req, file, cb) {
-        let userEmail;
-        if (req.currentUser !== undefined) {
-            userEmail = req.currentUser.email;
-        } else {
-            userEmail = req.body.email;
-        }
+        let userEmail = req.body.email;
+
         const ext = file.mimetype.split("/")[1];
         const fileName = `user-${userEmail}-${Date.now()}.${ext}`;
         cb(null, fileName);
@@ -41,9 +37,11 @@ const upload = multer({ storage: diskStorage, fileFilter });
 //routes
 const router = express.Router();
 
-router
-    .route("/register")
-    .post(verifyEmail, upload.single("avatar"), AuthControlers.register);
+// router
+//     .route("/register")
+//     .post(verifyEmail, upload.single("ID"), AuthControlers.register);
+
+router.route("/register").post(verifyEmail, AuthControlers.register);
 
 router.route("/login").post(AuthControlers.login);
 

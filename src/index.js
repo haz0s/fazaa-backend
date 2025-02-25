@@ -2,25 +2,17 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const mongoose = require("mongoose");
 require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 //routes
 const usersRouter = require("./router/usersRouter");
 const authRouter = require("./router/authRouter");
-const productsRouter = require("./router/productsRouter");
-const categoriesRouter = require("./router/categoriesRouter");
-const blogsRouter = require("./router/blogsRouter");
-const chatBotRouter = require("./router/chatBotRouter");
+const servicesRouter = require("./router/servicesRouter");
+const reportsRouter = require("./router/reportsRouter");
 //utils
 const httpRespone = require("./utils/httpRespone");
 
 //connect to DataBase
-const url = process.env.MONGO_URL;
-mongoose
-    .connect(url)
-    .then(() => console.log("connected to mongoBD server"))
-    .catch((err) => console.log("unable to connect to mongoDB server", err));
 
 const app = express();
 
@@ -30,10 +22,8 @@ app.use(express.json());
 //APIs
 app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
-app.use("/api/products", productsRouter);
-app.use("/api/categories", categoriesRouter);
-app.use("/api/blogs", blogsRouter);
-app.use("/api/chatbot", chatBotRouter);
+app.use("/api/service", servicesRouter);
+app.use("/api/reports", reportsRouter);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 //global middle ware for not found routes

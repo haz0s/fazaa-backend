@@ -1,6 +1,6 @@
 const userRoles = {
     ADMIN: "ADMIN",
-    MANAGER: "MANAGER",
+    PROVIDER: "TECHNICAL",
     USER: "USER",
 };
 

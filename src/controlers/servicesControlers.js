@@ -1,5 +1,6 @@
 // models
-const { Services } = require("../models"); // Correctly importing the Services model
+const { Services } = require("../models/Services"); // Correctly importing the Services model
+const { ServiceProvider } = require("../models/ServiceProvider");
 // middlewares
 const asyncWrapper = require("../middlewares/asyncWrapper");
 // utils
@@ -14,9 +15,11 @@ const allServices = asyncWrapper(async (req, res) => {
     const offset = (page - 1) * limit;
 
     // get all services from DB
-    const services = await Services.findAndCountAll({ // Use Services instead of Service
+    const services = await Services.findAll({
+        // Use Services instead of Service
         limit,
         offset,
+        include: { model: ServiceProvider },
     });
 
     res.status(200).json(httpResponse.goodResponse(200, services));
@@ -26,13 +29,19 @@ const allServices = asyncWrapper(async (req, res) => {
 const oneService = asyncWrapper(async (req, res) => {
     const serviceID = req.params.id;
     if (!serviceID) {
-        return res.status(400).json(httpResponse.badResponse(400, "Invalid data"));
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "Invalid data"));
     }
 
-    const service = await Services.findByPk(serviceID); // Use Services instead of Service
+    const service = await Services.findByPk(serviceID, {
+        include: { model: ServiceProvider },
+    }); // Use Services instead of Service
 
     if (!service) {
-        return res.status(404).json(httpResponse.badResponse(404, "Service not found"));
+        return res
+            .status(404)
+            .json(httpResponse.badResponse(404, "Service not found"));
     }
 
     res.status(200).json(httpResponse.goodResponse(200, service));
@@ -55,20 +64,26 @@ const createService = asyncWrapper(async (req, res) => {
         !InitialCheckUpCost ||
         !ServiceName
     ) {
-        return res.status(400).json(httpResponse.badResponse(400, "Invalid data"));
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "Invalid data"));
     }
 
     // Check if service already exists
-    const existingService = await Services.findOne({ // Use Services instead of Service
-        where: { Provider_Service_ID },
+    const existingService = await Services.findOne({
+        // Use Services instead of Service
+        where: { Provider_Service_ID, ServiceObj, ServiceName },
     });
 
     if (existingService) {
-        return res.status(400).json(httpResponse.badResponse(400, "Service already exists"));
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "Service already exists"));
     }
 
     // Create new service
-    const service = await Services.create({ // Use Services instead of Service
+    const service = await Services.create({
+        // Use Services instead of Service
         Provider_Service_ID,
         ServiceObj,
         Description,
@@ -76,7 +91,7 @@ const createService = asyncWrapper(async (req, res) => {
         ServiceName,
     });
 
-    let newToken = req.currentUser.newAccessToken || null;
+    let newToken = req.currentUser?.newAccessToken || null;
 
     res.status(201).json(
         httpResponse.goodResponse(
@@ -92,21 +107,25 @@ const createService = asyncWrapper(async (req, res) => {
 const deleteService = asyncWrapper(async (req, res) => {
     const serviceID = req.params.id;
     if (!serviceID) {
-        return res.status(400).json(httpResponse.badResponse(400, "Invalid data"));
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "Invalid data"));
     }
 
     // Check if service exists in DB
     const service = await Services.findByPk(serviceID); // Check if service exists
     if (!service) {
-        return res.status(404).json(httpResponse.badResponse(404, "Service not found"));
+        return res
+            .status(404)
+            .json(httpResponse.badResponse(404, "Service not found"));
     }
 
     // Delete service from DB
     await Services.destroy({
-        where: { id: serviceID },
+        where: { serviceId: serviceID },
     });
 
-    let newToken = req.currentUser.newAccessToken || null;
+    let newToken = req.currentUser?.newAccessToken || null;
 
     res.status(200).json(
         httpResponse.goodResponse(
@@ -123,7 +142,9 @@ const editService = asyncWrapper(async (req, res) => {
     const serviceID = req.params.id;
 
     if (!serviceID) {
-        return res.status(400).json(httpResponse.badResponse(400, "Invalid data"));
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "Invalid data"));
     }
 
     const newServiceData = req.body;
@@ -131,15 +152,17 @@ const editService = asyncWrapper(async (req, res) => {
     // Check if service exists
     const service = await Services.findByPk(serviceID); // Check if service exists
     if (!service) {
-        return res.status(404).json(httpResponse.badResponse(404, "Service not found"));
+        return res
+            .status(404)
+            .json(httpResponse.badResponse(404, "Service not found"));
     }
 
     // Update service data in DB
     await Services.update(newServiceData, {
-        where: { id: serviceID },
+        where: { serviceId: serviceID },
     });
 
-    let newToken = req.currentUser.newAccessToken || null;
+    let newToken = req.currentUser?.newAccessToken || null;
 
     res.status(200).json(
         httpResponse.goodResponse(

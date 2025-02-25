@@ -39,6 +39,14 @@ User.init(
             type: DataTypes.INTEGER,
             allowNull: true,
         },
+        accessToken: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        refreshToken: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
     },
     {
         sequelize,

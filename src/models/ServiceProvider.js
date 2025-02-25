@@ -31,6 +31,14 @@ ServiceProvider.init(
             type: DataTypes.STRING,
             allowNull: true,
         },
+        accessToken: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        refreshToken: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         // Add any additional fields specific to ServiceProvider here
     },
     {

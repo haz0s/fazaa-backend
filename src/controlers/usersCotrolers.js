@@ -1,7 +1,12 @@
 //modules
 const bcrypt = require("bcryptjs");
 //models
-
+const { User } = require("../models/User");
+const { ServiceProvider } = require("../models/ServiceProvider");
+const { Person } = require("../models/Person");
+const {
+    ServiceProviderServices,
+} = require("../models/ServiceProvider_Services.js");
 //middlewares
 const asyncWrapper = require("../middlewares/asyncWrapper");
 //utils
@@ -20,13 +25,13 @@ const allUsers = asyncWrapper(async (req, res) => {
     const page = query.page || 1;
     const skip = (page - 1) * limit;
 
-    // get all users from DB
+    const users = await Person.findAll({
+        limit,
+        offset,
+    });
 
     // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
-    }
+    let newToken = req.currentUser?.newAccessToken || null;
 
     res.status(200).json(httpResponse.goodResponse(200, users, "", newToken));
 });
@@ -40,17 +45,12 @@ const oneUser = asyncWrapper(async (req, res) => {
             .json(httpResponse.badResponse(400, "Invalid data"));
     }
 
-    // get user from DB
+    const user = await Person.findByPk(userID);
 
     // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
-    }
+    let newToken = req.currentUser?.newAccessToken || null;
 
-    res.status(200).json(
-        httpResponse.goodResponse(200, { user }, "", newToken)
-    );
+    res.status(200).json(httpResponse.goodResponse(200, user, "", newToken));
 });
 
 //create user
@@ -73,45 +73,76 @@ const createUser = asyncWrapper(async (req, res) => {
         !National_No ||
         !phone_No ||
         !role
-        // req.file === undefined
     ) {
         return res
             .status(400)
             .json(httpResponse.badResponse(400, "user already exists"));
     }
 
-    // let identity = req.file.filename;
+    const user = await Person.findOne({ phone_No: phone_No });
 
-    // check if user already exists, if so:
-    // return res
-    //     .status(400)
-    //     .json(httpResponse.badResponse(400, "user already exists"));
+    if (user) {
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "user already exists"));
+    }
 
     const hashedNational_No = await bcrypt.hash(National_No, 10);
-    const hashedPhone_No = await bcrypt.hash(National_No, 10);
 
     const accessToken = await generateAccessToken({
-        phone_No: newUser.phone_No,
-        id: newUser.id,
-        role: newUser.role,
+        phone_No: phone_No,
+        national_No: National_No,
+        role: role,
     });
 
     const refreshToken = await generateRefreshToken({
-        phone_No: newUser.phone_No,
-        id: newUser.id,
-        role: newUser.role,
+        phone_No: phone_No,
+        national_No: National_No,
+        role: role,
     });
 
-    // save user to DB
-
-    // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
+    if (role === userRoles.USER) {
+        await User.create({
+            firstName,
+            lastName,
+            gender,
+            location,
+            nationalNo: hashedNational_No,
+            cachedAvgRating: null,
+            numOfRating: 0,
+            accessToken,
+            refreshToken,
+        });
+    } else if (role === userRoles.PROVIDER) {
+        await ServiceProvider.create({
+            firstName,
+            lastName,
+            gender,
+            location,
+            nationalNo: hashedNational_No,
+            accessToken,
+            refreshToken,
+        });
     }
 
+    // return the new access token
+    let newToken = req.currentUser?.newAccessToken || null;
+
     res.status(201).json(
-        httpResponse.goodResponse(201, newUser, "user has been saved", newToken)
+        httpResponse.goodResponse(
+            201,
+            {
+                firstName,
+                lastName,
+                gender,
+                location,
+                nationalNo: hashedNational_No,
+                accessToken,
+                refreshToken,
+            },
+            "user has been created",
+            newToken
+        )
     );
 });
 
@@ -124,18 +155,18 @@ const deleteUser = asyncWrapper(async (req, res) => {
             .json(httpResponse.badResponse(400, "Invalid data"));
     }
 
-    // check if user already exists, if not:
-    // return res
-    //     .status(400)
-    //     .json(httpResponse.badResponse(400, "user not exists"));
+    const user = await Person.findOne({ phone_No: phone_No });
 
-    // delete user from DB
+    if (!user) {
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "user not exists"));
+    }
+
+    await user.destroy();
 
     // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
-    }
+    let newToken = req.currentUser?.newAccessToken || null;
 
     res.status(200).json(
         httpResponse.goodResponse(200, user, "user deleted", newToken)
@@ -145,6 +176,7 @@ const deleteUser = asyncWrapper(async (req, res) => {
 //edit || update user
 const editUser = asyncWrapper(async (req, res) => {
     const userID = req.params.id;
+    const newUserData = req.body;
 
     if (!userID) {
         return res
@@ -152,22 +184,24 @@ const editUser = asyncWrapper(async (req, res) => {
             .json(httpResponse.badResponse(400, "Invalid data"));
     }
 
-    const newUserData = req.body;
+    const user = await Person.findOne({ phone_No: phone_No });
 
-    // check if user already exists, if not:
-    // return res
-    //     .status(400)
-    //     .json(httpResponse.badResponse(400, "user not exists"));
-
-    //  update user data in DB
-
-    // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
+    if (!user) {
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "user not exists"));
     }
 
-    res.status(200).json(
+    if (newUserData.nationalNo) {
+        newUserData.nationalNo = await bcrypt.hash(newUserData.nationalNo, 10);
+    }
+
+    await user.update(newUserData);
+
+    // return the new access token
+    let newToken = req.currentUser?.newAccessToken || null;
+
+    res.status(201).json(
         httpResponse.goodResponse(201, user, "user updated", newToken)
     );
 });

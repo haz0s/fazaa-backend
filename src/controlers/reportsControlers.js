@@ -1,5 +1,5 @@
 // models
-const { ServiceReport } = require("../models");
+const { ServiceReport } = require("../models/ServiceReport");
 
 // middlewares
 const asyncWrapper = require("../middlewares/asyncWrapper");
@@ -70,9 +70,15 @@ const createReport = asyncWrapper(async (req, res) => {
     );
 });
 
-// Get one 
+// Get one
 const oneReport = asyncWrapper(async (req, res) => {
     const reportID = req.params.id;
+
+    if (!reportID) {
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "report ID is required"));
+    }
 
     const report = await Report.findByPk(reportID);
 
@@ -88,6 +94,12 @@ const oneReport = asyncWrapper(async (req, res) => {
 // Delete a report
 const deleteReport = asyncWrapper(async (req, res) => {
     const reportID = req.params.id;
+
+    if (!reportID) {
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "report ID is required"));
+    }
 
     const report = await Report.findByPk(reportID);
     if (!report) {
@@ -114,6 +126,12 @@ const deleteReport = asyncWrapper(async (req, res) => {
 const editReport = asyncWrapper(async (req, res) => {
     const reportID = req.params.id;
     const newReportData = req.body;
+
+    if (!reportID) {
+        return res
+            .status(400)
+            .json(httpResponse.badResponse(400, "report ID is required"));
+    }
 
     const report = await Report.findByPk(reportID);
     if (!report) {

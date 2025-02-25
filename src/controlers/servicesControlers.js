@@ -1,41 +1,44 @@
-//models
-
-//middlewares
+// models
+const { Services } = require("../models"); // Correctly importing the Services model
+// middlewares
 const asyncWrapper = require("../middlewares/asyncWrapper");
-//utils
+// utils
 const httpResponse = require("../utils/httpRespone");
 
-//get all products
+// get all services
 const allServices = asyncWrapper(async (req, res) => {
     const query = req.query;
 
-    const limit = query.limit || 10;
-    const page = query.page || 1;
-    const skip = (page - 1) * limit;
+    const limit = Number(query.limit) || 10;
+    const page = Number(query.page) || 1;
+    const offset = (page - 1) * limit;
 
     // get all services from DB
+    const services = await Services.findAndCountAll({ // Use Services instead of Service
+        limit,
+        offset,
+    });
 
     res.status(200).json(httpResponse.goodResponse(200, services));
 });
 
-//get one product
+// get one service
 const oneService = asyncWrapper(async (req, res) => {
     const serviceID = req.params.id;
     if (!serviceID) {
-        return res
-            .status(400)
-            .json(httpResponse.badResponse(400, "Invalid data"));
+        return res.status(400).json(httpResponse.badResponse(400, "Invalid data"));
     }
 
-    // check if service exists in DB, if not:
-    // return res
-    //         .status(400)
-    //         .json(httpResponse.badResponse(400, "Invalid data"));
+    const service = await Services.findByPk(serviceID); // Use Services instead of Service
+
+    if (!service) {
+        return res.status(404).json(httpResponse.badResponse(404, "Service not found"));
+    }
 
     res.status(200).json(httpResponse.goodResponse(200, service));
 });
 
-//create product
+// create service
 const createService = asyncWrapper(async (req, res) => {
     const {
         Provider_Service_ID,
@@ -52,96 +55,97 @@ const createService = asyncWrapper(async (req, res) => {
         !InitialCheckUpCost ||
         !ServiceName
     ) {
-        return res
-            .status(400)
-            .json(httpResponse.badResponse(400, "Invalid data"));
+        return res.status(400).json(httpResponse.badResponse(400, "Invalid data"));
     }
 
-    // check if service already exists, is so:
-    // return res
-    //         .status(400)
-    //         .json(httpResponse.badResponse(400, "service already exists"));
+    // Check if service already exists
+    const existingService = await Services.findOne({ // Use Services instead of Service
+        where: { Provider_Service_ID },
+    });
 
-    // save new service to DB
-
-    // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
+    if (existingService) {
+        return res.status(400).json(httpResponse.badResponse(400, "Service already exists"));
     }
+
+    // Create new service
+    const service = await Services.create({ // Use Services instead of Service
+        Provider_Service_ID,
+        ServiceObj,
+        Description,
+        InitialCheckUpCost,
+        ServiceName,
+    });
+
+    let newToken = req.currentUser.newAccessToken || null;
 
     res.status(201).json(
         httpResponse.goodResponse(
             201,
             service,
-            "service created successfully",
+            "Service created successfully",
             newToken
         )
     );
 });
 
-//delete product
+// delete service
 const deleteService = asyncWrapper(async (req, res) => {
     const serviceID = req.params.id;
     if (!serviceID) {
-        return res
-            .status(400)
-            .json(httpResponse.badResponse(400, "Invalid data"));
+        return res.status(400).json(httpResponse.badResponse(400, "Invalid data"));
     }
 
-    // check if service exists in DB, if not:
-    // return res
-    // .status(400)
-    // .json(httpResponse.badResponse(400, "Invalid data"));
-
-    // delete service from DB
-
-    // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
+    // Check if service exists in DB
+    const service = await Services.findByPk(serviceID); // Check if service exists
+    if (!service) {
+        return res.status(404).json(httpResponse.badResponse(404, "Service not found"));
     }
+
+    // Delete service from DB
+    await Services.destroy({
+        where: { id: serviceID },
+    });
+
+    let newToken = req.currentUser.newAccessToken || null;
+
+    res.status(200).json(
+        httpResponse.goodResponse(
+            200,
+            null, // No data to return for deletion
+            "Service deleted successfully",
+            newToken
+        )
+    );
+});
+
+// edit || update service
+const editService = asyncWrapper(async (req, res) => {
+    const serviceID = req.params.id;
+
+    if (!serviceID) {
+        return res.status(400).json(httpResponse.badResponse(400, "Invalid data"));
+    }
+
+    const newServiceData = req.body;
+
+    // Check if service exists
+    const service = await Services.findByPk(serviceID); // Check if service exists
+    if (!service) {
+        return res.status(404).json(httpResponse.badResponse(404, "Service not found"));
+    }
+
+    // Update service data in DB
+    await Services.update(newServiceData, {
+        where: { id: serviceID },
+    });
+
+    let newToken = req.currentUser.newAccessToken || null;
 
     res.status(200).json(
         httpResponse.goodResponse(
             200,
             service,
-            "service deleted successfully",
-            newToken
-        )
-    );
-});
-
-//edit || update product
-const editService = asyncWrapper(async (req, res) => {
-    const serviceID = req.params.id;
-
-    if (!serviceID) {
-        return res
-            .status(400)
-            .json(httpResponse.badResponse(400, "Invalid data"));
-    }
-
-    const newServiceData = req.body;
-
-    // check if service exists, if not:
-    // return res
-    //         .status(400)
-    //         .json(httpResponse.badResponse(400, "Invalid data"));
-
-    // save new service data to DB
-
-    // return the new access token
-    let newToken = null;
-    if (req.currentUser.newAccessToken) {
-        newToken = req.currentUser.newAccessToken;
-    }
-
-    res.status(201).json(
-        httpResponse.goodResponse(
-            201,
-            service,
-            "Product updated successfully",
+            "Service updated successfully",
             newToken
         )
     );

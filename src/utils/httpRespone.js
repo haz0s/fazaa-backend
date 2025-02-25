@@ -16,8 +16,9 @@ function badResponse(code, massage) {
     let httpResponse = {
         status: ERROR,
         code: code,
-        massage: massage,
         data: null,
+        newAccessToken: null,
+        massage: massage,
     };
     return httpResponse;
 }

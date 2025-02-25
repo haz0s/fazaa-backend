@@ -1,23 +1,34 @@
-// src/index.js
-import express from 'express';
-import sequelize from './db/sequelize.js';
-import User from './models/User.js';
-import ServiceProvider from './models/ServiceProvider.js';
-import ServiceRequest from './models/ServiceRequest.js';
-import ServiceProviderServices from './models/ServiceProviderServices.js';
-import ServiceReport from './models/ServiceReport.js';
-import Services from './models/Services.js'; // Import the Services model
+
+//modules
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+require("dotenv").config();
+const PORT = process.env.PORT || 4000;
+//routes
+const usersRouter = require("./router/usersRouter");
+const authRouter = require("./router/authRouter");
+const servicesRouter = require("./router/servicesRouter");
+const reportsRouter = require("./router/reportsRouter");
+//utils
+const httpRespone = require("./utils/httpRespone");
+
+//connect to DataBase
+
 
 // Initialize Express app
 const app = express();
 
-// Define associations
-User.associate({ ServiceRequest });
-ServiceProvider.associate({ ServiceRequest });
-ServiceRequest.associate({ User, ServiceProvider });
-ServiceProviderServices.associate({ Services });
-ServiceReport.associate({ ServiceRequest });
-Services.associate({ /* any associations if needed */ }); // Define any associations for Services
+app.use(cors());
+app.use(express.json());
+
+//APIs
+app.use("/api/users", usersRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/service", servicesRouter);
+app.use("/api/reports", reportsRouter);
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 const syncDatabase = async () => {
     try {

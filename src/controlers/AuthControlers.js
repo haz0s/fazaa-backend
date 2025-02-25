@@ -1,8 +1,7 @@
 //modules
 const bcrypt = require("bcryptjs");
 //models
-const User = require("../models/usersModel");
-const Cart = require("../models/cartModel");
+
 //middlewares
 const asyncWrapper = require("../middlewares/asyncWrapper");
 //utils
@@ -11,59 +10,58 @@ const {
     generateAccessToken,
     generateRefreshToken,
 } = require("../utils/generateJWT");
+const userRoles = require("../utils/userRols");
 
 //register
 const register = asyncWrapper(async (req, res) => {
-    const { username, email, password } = req.body;
-    let avatar;
-    if (req.file !== undefined) {
-        avatar = req.file.filename;
-    }
+    const {
+        firstName,
+        lastName,
+        gender,
+        location,
+        National_No,
+        phone_No,
+        role,
+    } = req.body;
 
-    const oldUser = await User.findOne({ email: email });
-    if (oldUser) {
+    if (
+        !firstName ||
+        !lastName ||
+        !gender ||
+        !location ||
+        !National_No ||
+        !phone_No ||
+        !role
+        // req.file === undefined
+    ) {
         return res
             .status(400)
             .json(httpResponse.badResponse(400, "user already exists"));
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // let identity = req.file.filename;
 
-    let newUser = new User({
-        username,
-        email,
-        password: hashedPassword,
-    });
+    // check if user already exists, if so:
+    // return res
+    //     .status(400)
+    //     .json(httpResponse.badResponse(400, "user already exists"));
+
+    const hashedNational_No = await bcrypt.hash(National_No, 10);
+    const hashedPhone_No = await bcrypt.hash(National_No, 10);
 
     const accessToken = await generateAccessToken({
-        email: newUser.email,
-        id: newUser._id,
+        phone_No: newUser.phone_No,
+        id: newUser.id,
         role: newUser.role,
     });
 
     const refreshToken = await generateRefreshToken({
-        email: newUser.email,
-        id: newUser._id,
+        phone_No: newUser.phone_No,
+        id: newUser.id,
         role: newUser.role,
     });
 
-    newUser.token = accessToken;
-    newUser.refreshToken = refreshToken;
-
-    if (avatar) {
-        newUser.avatar = avatar;
-    }
-
-    const userCart = new Cart({
-        price: 0,
-        products: [],
-    });
-
-    await userCart.save();
-
-    newUser.cart = userCart;
-
-    await newUser.save();
+    // save user to DB
 
     res.status(201).json(
         httpResponse.goodResponse(201, newUser, "user has been saved")
@@ -72,9 +70,9 @@ const register = asyncWrapper(async (req, res) => {
 
 //login
 const login = asyncWrapper(async (req, res) => {
-    const { email, password } = req.body;
+    const { phone_No } = req.body;
 
-    if (!email || !password) {
+    if (!phone_No) {
         return res
             .status(400)
             .json(
@@ -82,15 +80,15 @@ const login = asyncWrapper(async (req, res) => {
             );
     }
 
-    const oldUser = await User.findOne({ email: email }).populate("cart");
-    if (!oldUser) {
-        return res
-            .status(400)
-            .json(httpResponse.badResponse(400, "user not exists"));
-    }
+    // check if user exists, if not:
 
-    const matchedPassord = await bcrypt.compare(password, oldUser.password);
-    if (!matchedPassord) {
+    // return res
+    //     .status(400)
+    //     .json(httpResponse.badResponse(400, "user not exists"));
+
+    // check phone number matches
+    const matchedPhone_No = await bcrypt.compare(password, oldUser.password);
+    if (!matchedPhone_No) {
         return res
             .status(400)
             .json(httpResponse.badResponse(400, "password mismatch"));
@@ -108,8 +106,7 @@ const login = asyncWrapper(async (req, res) => {
         role: oldUser.role,
     });
 
-    oldUser.token = accessToken;
-    oldUser.refreshToken = refreshToken;
+    // put tokens to user DB
 
     res.status(200).json(
         httpResponse.goodResponse(201, oldUser, "user logged in successfully")

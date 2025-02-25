@@ -15,7 +15,9 @@ class Services {
         if (typeof ID === "number" && ID > 0) {
             this.Service_Type_ID = ID;
         } else {
-            console.error("Invalid Service Type ID. It must be a positive integer.");
+            console.error(
+                "Invalid Service Type ID. It must be a positive integer."
+            );
         }
     }
 
@@ -27,9 +29,11 @@ class Services {
         if (typeof Service === "string" && Service.trim().length > 0) {
             this.ServiceName = Service;
         } else {
-            console.error("Invalid Service Name. It must be a non-empty string.");
+            console.error(
+                "Invalid Service Name. It must be a non-empty string."
+            );
         }
     }
 }
 
-export default Services;
+module.exports = { Services };

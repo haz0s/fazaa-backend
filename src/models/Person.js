@@ -1,6 +1,6 @@
 // src/models/Person.js
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../config/sequelize.js';
+const { Model, DataTypes } = require("sequelize");
+const { sequelize } = require("../config/sequelize.js");
 
 class Person extends Model {}
 
@@ -31,13 +31,21 @@ Person.init(
             type: DataTypes.STRING,
             allowNull: true,
         },
+        accessToken: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        refreshToken: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
     },
     {
         sequelize,
-        modelName: 'Person',
-        tableName: 'persons', // Make sure this matches your actual table name
+        modelName: "Person",
+        tableName: "persons", // Make sure this matches your actual table name
         timestamps: false,
     }
 );
 
-export default Person;
+module.exports = { Person };

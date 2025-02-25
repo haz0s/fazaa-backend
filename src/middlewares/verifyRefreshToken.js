@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const httpResponse = require("../utils/httpRespone");
 const { generateAccessToken } = require("../utils/generateJWT");
-const User = require("../models/usersModel");
 
 const verifyRefreshToken = async (req, res, next) => {
     if (req.currentUser === "Unauthorized") {
@@ -27,11 +26,7 @@ const verifyRefreshToken = async (req, res, next) => {
 
             currentUser.newAccessToken = newAccessToken;
 
-            await User.findByIdAndUpdate(currentUser.id, {
-                $set: {
-                    token: newAccessToken,
-                },
-            });
+            // set new access token to user db
 
             req.currentUser = currentUser;
 

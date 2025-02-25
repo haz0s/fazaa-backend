@@ -1,18 +1,15 @@
-import { Sequelize } from 'sequelize';
-
-// Load environment variables
-import dotenv from 'dotenv';
-dotenv.config();
+const { Sequelize } = require("sequelize");
+require("dotenv").config();
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: 'postgres',
+    dialect: "postgres",
     dialectOptions: {
         ssl: {
             require: true, // Required for Supabase
-            rejectUnauthorized: false
-        }
+            rejectUnauthorized: false,
+        },
     },
-    logging: false // Disable logs
+    logging: false, // Disable logs
 });
 
-export default sequelize;
+module.exports = { sequelize };

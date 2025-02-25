@@ -1,7 +1,7 @@
 // src/models/User.js
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../config/sequelize.js';
-import Person from './Person.js';
+const { Model, DataTypes } = require("sequelize");
+const { sequelize } = require("../config/sequelize.js");
+const { Person } = require("./Person.js");
 
 class User extends Person {}
 
@@ -42,8 +42,8 @@ User.init(
     },
     {
         sequelize,
-        modelName: 'User',
-        tableName: 'users', // Make sure this matches your actual table name
+        modelName: "User",
+        tableName: "users", // Make sure this matches your actual table name
         timestamps: false,
     }
 );
@@ -51,9 +51,9 @@ User.init(
 // Association method
 User.associate = (models) => {
     User.hasMany(models.ServiceRequest, {
-        foreignKey: 'userId',
-        as: 'serviceRequests',
+        foreignKey: "userId",
+        as: "serviceRequests",
     });
 };
 
-export default User;
+module.exports = { User };

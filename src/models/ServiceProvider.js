@@ -1,7 +1,7 @@
 // src/models/ServiceProvider.js
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../config/sequelize.js';
-import Person from './Person.js';
+const { Model, DataTypes } = require("sequelize");
+const { sequelize } = require("../config/sequelize.js");
+const { Person } = require("./Person.js");
 
 class ServiceProvider extends Person {}
 
@@ -35,18 +35,17 @@ ServiceProvider.init(
     },
     {
         sequelize,
-        modelName: 'ServiceProvider',
-        tableName: 'service_providers', // Make sure this matches your actual table name
+        modelName: "ServiceProvider",
+        tableName: "service_providers", // Make sure this matches your actual table name
         timestamps: false,
     }
-    
 );
 
 ServiceProvider.associate = (models) => {
     ServiceProvider.hasMany(models.ServiceRequest, {
-        foreignKey: 'providerId',
-        as: 'serviceRequests',
+        foreignKey: "providerId",
+        as: "serviceRequests",
     });
-}
+};
 
-export default ServiceProvider;
+module.exports = { ServiceProvider };

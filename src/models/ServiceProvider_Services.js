@@ -1,54 +1,44 @@
-// src/models/ServiceProvider_Services.js
-import Services from './Services.js';
+// src/models/ServiceProviderServices.js
+import { DataTypes } from 'sequelize';
+import sequelize from '../db/sequelize.js';
 
-class ServiceProvider_Services {
-    constructor(Provider_Service_ID, ServiceObj, Description, InitialCheckUpCost) {
-        this.Provider_Service_ID = Provider_Service_ID;
-        this.ServiceObj = ServiceObj;
-        this.Description = Description;
-        this.InitialCheckUpCost = InitialCheckUpCost;
-    }
+const ServiceProviderServices = sequelize.define('ServiceProviderServices', {
+    providerServiceId: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true, // Adjust if needed
+        field: 'Provider_Service_ID', // Specify the actual column name in the table
+    },
+    serviceObjId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        field: 'ServiceObj', // Specify the actual column name in the table
+        references: {
+            model: 'Services', // Name of the Services table
+            key: 'ServiceId', // Key in the referenced table
+        },
+    },
+    description: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: 'Description', // Specify the actual column name in the table
+    },
+    initialCheckUpCost: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        field: 'InitialCheckUpCost', // Specify the actual column name in the table
+    },
+}, {
+    tableName: 'Service_Provider_Services',
+    timestamps: false,
+});
 
-    // Getters and Setters
-    GetProviderServiceID() {
-        return this.Provider_Service_ID;
-    }
+// Associations
+ServiceProviderServices.associate = (models) => {
+    ServiceProviderServices.belongsTo(models.Services, {
+        foreignKey: 'serviceObjId',
+        as: 'serviceObj',
+    });
+};
 
-    SetProviderServiceID(ID) {
-        this.Provider_Service_ID = ID;
-    }
-
-    GetServiceObj() {
-        return this.ServiceObj;
-    }
-
-    SetServiceObj(ServiceObj) {
-        if (ServiceObj instanceof Services) {
-            this.ServiceObj = ServiceObj;
-        } else {
-            console.error("Invalid Service object.");
-        }
-    }
-
-    GetDescription() {
-        return this.Description;
-    }
-
-    SetDescription(Desc) {
-        this.Description = Desc;
-    }
-
-    GetInitialCost() {
-        return this.InitialCheckUpCost;
-    }
-
-    SetInitialCost(Cost) {
-        if (typeof Cost === "number" && Cost >= 0) {
-            this.InitialCheckUpCost = Cost;
-        } else {
-            console.error("Initial cost must be a non-negative number.");
-        }
-    }
-}
-
-export default ServiceProvider_Services;
+export default ServiceProviderServices;

@@ -1,62 +1,43 @@
+// src/models/Person.js
+import { Model, DataTypes } from 'sequelize';
+import sequelize from '../config/sequelize.js';
 
-class Person {
-    constructor(personId, firstName, lastName, gender, location, nationalNo) {
-        this.personId = personId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.gender = gender; // byte
-        this.location = location;
-        this.nationalNo = nationalNo;
-    }
+class Person extends Model {}
 
-    // Getter and Setter methods
-    GetPersonId() {
-        return this.personId;
+Person.init(
+    {
+        personId: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
+        firstName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        lastName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        gender: {
+            type: DataTypes.INTEGER, // Assuming gender is represented as a byte
+            allowNull: false,
+        },
+        location: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        nationalNo: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+    },
+    {
+        sequelize,
+        modelName: 'Person',
+        tableName: 'persons', // Make sure this matches your actual table name
+        timestamps: false,
     }
-
-    SetPersonId(personId) {
-        this.personId = personId;
-    }
-
-    GetFirstName() {
-        return this.firstName;
-    }
-
-    SetFirstName(firstName) {
-        this.firstName = firstName;
-    }
-
-    GetLastName() {
-        return this.lastName;
-    }
-
-    SetLastName(lastName) {
-        this.lastName = lastName;
-    }
-
-    GetGender() {
-        return this.gender;
-    }
-
-    SetGender(gender) {
-        this.gender = gender;
-    }
-
-    GetLocation() {
-        return this.location;
-    }
-
-    SetLocation(location) {
-        this.location = location;
-    }
-
-    GetNationalNo() {
-        return this.nationalNo;
-    }
-
-    SetNationalNo(nationalNo) {
-        this.nationalNo = nationalNo;
-    }
-}
+);
 
 export default Person;

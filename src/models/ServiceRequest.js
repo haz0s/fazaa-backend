@@ -1,75 +1,60 @@
 // src/models/ServiceRequest.js
-import User from './User.js';
-import ServiceProvider from './ServiceProvider.js';
+import { DataTypes } from 'sequelize';
+import sequelize from '../db/sequelize.js'; // Adjust the path as needed
 
-class ServiceRequest {
-    constructor(Request_ID, UserObj, ProviderObj, ServiceType_ID, DateOfSubmission, Description, Status) {
-        this.Request_ID = Request_ID;
-        this.UserObj = UserObj; // User instance
-        this.ProviderObj = ProviderObj; // ServiceProvider instance
-        this.ServiceType_ID = ServiceType_ID;
-        this.DateOfSubmission = DateOfSubmission;
-        this.Description = Description;
-        this.Status = Status; // Status (e.g., 0 = Pending, 1 = In Progress, 2 = Completed)
-    }
+const ServiceRequest = sequelize.define('ServiceRequest', {
+    requestId: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+    },
+    userId: { // Foreign key to User
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Users', // Name of the User table
+            key: 'userId', // Key in the referenced table
+        },
+    },
+    providerId: { // Foreign key to ServiceProvider
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'ServiceProviders', // Name of the ServiceProvider table
+            key: 'providerId', // Key in the referenced table
+        },
+    },
+    serviceTypeId: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    },
+    dateOfSubmission: {
+        type: DataTypes.DATE,
+        allowNull: false,
+    },
+    description: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    status: {
+        type: DataTypes.BYTE,
+        allowNull: false,
+    },
+}, {
+    tableName: 'ServiceRequests', // Specify the table name if different
+    timestamps: false, // Set to true if you want createdAt/updatedAt fields
+});
 
-    // Getters and Setters
-    GetUserObj() {
-        return this.UserObj;
-    }
-
-    SetUserObj(UserObj) {
-        this.UserObj = UserObj;
-    }
-
-    GetProviderObj() {
-        return this.ProviderObj;
-    }
-
-    SetProviderObj(ProviderObj) {
-        this.ProviderObj = ProviderObj;
-    }
-
-    GetStatus() {
-        return this.Status;
-    }
-
-    SetStatus(Status) {
-        this.Status = Status;
-    }
-
-    GetDateOfSubmission() {
-        return this.DateOfSubmission;
-    }
-
-    SetDateOfSubmission(Date) {
-        this.DateOfSubmission = Date;
-    }
-
-    GetDescription() {
-        return this.Description;
-    }
-
-    SetDescription(Desc) {
-        this.Description = Desc;
-    }
-
-    // Method to update request status
-    UpdateStatus(newStatus) {
-        this.Status = newStatus;
-        console.log(`Request ${this.Request_ID} status updated to ${newStatus}`);
-    }
-
-    // Method to display request details
-    DisplayRequestDetails() {
-        console.log(`Request ID: ${this.Request_ID}`);
-        console.log(`User: ${this.UserObj.GetFirstName()} ${this.UserObj.GetLastName()}`);
-        console.log(`Provider: ${this.ProviderObj.GetFirstName()} ${this.ProviderObj.GetLastName()}`);
-        console.log(`Service Type ID: ${this.ServiceType_ID}`);
-        console.log(`Date Submitted: ${this.DateOfSubmission}`);
-        console.log(`Description: ${this.Description}`);
-        console.log(`Status: ${this.Status}`);
-    }
-}
+// Associations with User and ServiceProvider
+ServiceRequest.associate = (models) => {
+    ServiceRequest.belongsTo(models.User, {
+        foreignKey: 'userId',
+        as: 'userObj',
+    });
+    ServiceRequest.belongsTo(models.ServiceProvider, {
+        foreignKey: 'providerId',
+        as: 'providerObj',
+    });
+};
 
 export default ServiceRequest;

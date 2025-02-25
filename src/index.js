@@ -1,53 +1,38 @@
-//modules
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-const mongoose = require("mongoose");
-require("dotenv").config();
-const PORT = process.env.PORT || 4000;
-//routes
-const usersRouter = require("./router/usersRouter");
-const authRouter = require("./router/authRouter");
-const productsRouter = require("./router/productsRouter");
-const categoriesRouter = require("./router/categoriesRouter");
-const blogsRouter = require("./router/blogsRouter");
-const chatBotRouter = require("./router/chatBotRouter");
-//utils
-const httpRespone = require("./utils/httpRespone");
+// src/index.js
+import express from 'express';
+import sequelize from './db/sequelize.js';
+import User from './models/User.js';
+import ServiceProvider from './models/ServiceProvider.js';
+import ServiceRequest from './models/ServiceRequest.js';
+import ServiceProviderServices from './models/ServiceProviderServices.js';
+import ServiceReport from './models/ServiceReport.js';
+import Services from './models/Services.js'; // Import the Services model
 
-//connect to DataBase
-const url = process.env.MONGO_URL;
-mongoose
-    .connect(url)
-    .then(() => console.log("connected to mongoBD server"))
-    .catch((err) => console.log("unable to connect to mongoDB server", err));
-
+// Initialize Express app
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// Define associations
+User.associate({ ServiceRequest });
+ServiceProvider.associate({ ServiceRequest });
+ServiceRequest.associate({ User, ServiceProvider });
+ServiceProviderServices.associate({ Services });
+ServiceReport.associate({ ServiceRequest });
+Services.associate({ /* any associations if needed */ }); // Define any associations for Services
 
-//APIs
-app.use("/api/users", usersRouter);
-app.use("/api/auth", authRouter);
-app.use("/api/products", productsRouter);
-app.use("/api/categories", categoriesRouter);
-app.use("/api/blogs", blogsRouter);
-app.use("/api/chatbot", chatBotRouter);
-app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+const syncDatabase = async () => {
+    try {
+        await sequelize.sync({ alter: true }); // Sync the database
+        console.log('Database & tables synchronized successfully!');
+    } catch (error) {
+        console.error('Error synchronizing the database:', error);
+    }
+};
 
-//global middle ware for not found routes
-app.all("*", (req, res, next) => {
-    return res.status(404).json(httpRespone.badResponse(404, "page not found"));
-});
+// Call the sync function
+syncDatabase();
 
-//global error handler
-app.use((error, req, res, next) => {
-    res.status(500).json(
-        httpRespone.badResponse(`internal server error! ${error}!`)
-    );
-});
-
+// Start your server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`listening on http://localhost on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });

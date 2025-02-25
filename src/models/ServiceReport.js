@@ -1,76 +1,52 @@
 // src/models/ServiceReport.js
-import ServiceRequest from './ServiceRequest.js';
+import { DataTypes } from 'sequelize';
+import sequelize from '../db/sequelize.js'; // Adjust the path as needed
 
-class ServiceReport {
-    constructor(ReportID, RequestObj, DateOfReport, FinalServiceCost, RatingValue, Role, Comments) {
-        this.ReportID = ReportID;
-        this.RequestObj = RequestObj; // Instance of ServiceRequest
-        this.DateOfReport = DateOfReport;
-        this.FinalServiceCost = FinalServiceCost;
-        this.RatingValue = RatingValue;
-        this.Role = Role; // Role (e.g., 0 = User, 1 = Provider)
-        this.Comments = Comments;
-    }
+const ServiceReport = sequelize.define('ServiceReport', {
+    reportId: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+    },
+    requestId: { // Foreign key to ServiceRequest
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'ServiceRequests', // Name of the table
+            key: 'requestId', // Key in the referenced table
+        },
+    },
+    dateOfReport: {
+        type: DataTypes.DATE,
+        allowNull: false,
+    },
+    finalServiceCost: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    },
+    ratingValue: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    },
+    role: {
+        type: DataTypes.BYTE,
+        allowNull: false,
+    },
+    comments: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+}, {
+    tableName: 'ServiceReports', // Specify the table name if different
+    timestamps: false, // Set to true if you want createdAt/updatedAt fields
+});
 
-    // Getters and Setters
-    GetRequest() {
-        return this.RequestObj;
-    }
-
-    SetRequest(RequestObj) {
-        this.RequestObj = RequestObj;
-    }
-
-    GetDateOfReport() {
-        return this.DateOfReport;
-    }
-
-    SetDateOfReport(Date) {
-        this.DateOfReport = Date;
-    }
-
-    GetFinalCost() {
-        return this.FinalServiceCost;
-    }
-
-    SetFinalCost(Cost) {
-        this.FinalServiceCost = Cost;
-    }
-
-    GetRating() {
-        return this.RatingValue;
-    }
-
-    SetRating(Rating) {
-        this.RatingValue = Rating;
-    }
-
-    GetRole() {
-        return this.Role;
-    }
-
-    SetRole(Role) {
-        this.Role = Role;
-    }
-
-    GetComments() {
-        return this.Comments;
-    }
-
-    SetComments(Comment) {
-        this.Comments = Comment;
-    }
-
-    // Method to display report details
-    DisplayReport() {
-        console.log(`Report ID: ${this.ReportID}`);
-        console.log(`Service Request ID: ${this.RequestObj.Request_ID}`);
-        console.log(`Date of Report: ${this.DateOfReport}`);
-        console.log(`Final Service Cost: $${this.FinalServiceCost}`);
-        console.log(`Rating: ${this.RatingValue} Stars`);
-        console.log(`Role: ${this.Role === 0 ? 'User' : 'Provider'}`);
-        console.log(`Comments: ${this.Comments}`);
-    }
-}
+// Association with ServiceRequest
+ServiceReport.associate = (models) => {
+    ServiceReport.belongsTo(models.ServiceRequest, {
+        foreignKey: 'requestId',
+        as: 'serviceRequest',
+    });
+};
 
 export default ServiceReport;

@@ -1,57 +1,59 @@
 // src/models/User.js
-import supabase from '../db/supabaseClient.js';
+import { Model, DataTypes } from 'sequelize';
+import sequelize from '../config/sequelize.js';
 import Person from './Person.js';
 
-class User extends Person {
-    constructor(personId, firstName, lastName, gender, location, nationalNo, userId, cachedAvgRating, numOfRating) {
-        super(personId, firstName, lastName, gender, location, nationalNo);
-        this.userId = userId;
-        this.cachedAvgRating = cachedAvgRating;
-        this.numOfRating = numOfRating;
-    }
+class User extends Person {}
 
-    // Database insertion
-    async save() {
-        const { data, error } = await supabase
-            .from('Users')
-            .insert([{
-                UserId: this.userId,
-                FirstName: this.GetFirstName(),
-                LastName: this.GetLastName(),
-                Gender: this.GetGender(),
-                Location: this.GetLocation(),
-                National_No: this.GetNationalNo(),
-                CachedAvgRating: this.cachedAvgRating,
-                NumOfRating: this.numOfRating
-            }]);
-
-        if (error) {
-            console.error('Error adding user:', error);
-            return null;
-        }
-        console.log('User added successfully:', data);
-        return data;
+User.init(
+    {
+        userId: {
+            type: DataTypes.STRING,
+            primaryKey: true,
+        },
+        firstName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        lastName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        gender: {
+            type: DataTypes.INTEGER, // Assuming gender is represented as a byte
+            allowNull: false,
+        },
+        location: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        nationalNo: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        cachedAvgRating: {
+            type: DataTypes.FLOAT,
+            allowNull: true,
+        },
+        numOfRating: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+    },
+    {
+        sequelize,
+        modelName: 'User',
+        tableName: 'users', // Make sure this matches your actual table name
+        timestamps: false,
     }
+);
 
-    // Functional Methods
-    SubmitReq() {
-        console.log("Submitting request...");
-        return true; // Placeholder for actual logic
-    }
-
-    GenerateServiceReport() {
-        console.log("Generating service report...");
-        return true;
-    }
-
-    CancelService() {
-        console.log("Cancelling service...");
-        return true;
-    }
-
-    ViewServiceHistory() {
-        console.log("Viewing service history...");
-    }
-}
+// Association method
+User.associate = (models) => {
+    User.hasMany(models.ServiceRequest, {
+        foreignKey: 'userId',
+        as: 'serviceRequests',
+    });
+};
 
 export default User;

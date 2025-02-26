@@ -11,7 +11,14 @@ const verifyToken = (req, res, next) => {
             .json(httpResponse.badResponse(401, "Unauthorized"));
     }
 
+    const verify = authHeader.split(" ")[0];
     const token = authHeader.split(" ")[1];
+
+    if (verify !== "AcBearer") {
+        return res
+            .status(401)
+            .json(httpResponse.badResponse(401, "Unauthorized"));
+    }
 
     try {
         const currentUser = jwt.verify(token, process.env.jwt_secret_key);

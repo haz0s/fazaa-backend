@@ -41,7 +41,7 @@ const router = express.Router();
 //     .route("/register")
 //     .post(verifyEmail, upload.single("ID"), AuthControlers.register);
 
-router.route("/register").post(verifyEmail, AuthControlers.register);
+router.route("/register").post(AuthControlers.register);
 
 router.route("/login").post(AuthControlers.login);
 

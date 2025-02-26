@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const httpResponse = require("../utils/httpRespone");
 const { generateAccessToken } = require("../utils/generateJWT");
+const { Person } = require("../models/Person");
 
 const verifyRefreshToken = async (req, res, next) => {
     if (req.currentUser === "Unauthorized") {
@@ -12,9 +13,18 @@ const verifyRefreshToken = async (req, res, next) => {
                 .json(httpResponse.badResponse(401, "Unauthorized"));
         }
 
+        const verify = refreshToken.split(" ")[0];
+        const token = refreshToken.split(" ")[1];
+
+        if (verify !== "ReBearer") {
+            return res
+                .status(401)
+                .json(httpResponse.badResponse(401, "Unauthorized"));
+        }
+
         try {
             let currentUser = jwt.verify(
-                refreshToken,
+                token,
                 process.env.jwt_secret_refresh_key
             );
 
@@ -26,7 +36,14 @@ const verifyRefreshToken = async (req, res, next) => {
 
             currentUser.newAccessToken = newAccessToken;
 
-            // set new access token to user db
+            await Person.update(
+                { accessToken: newAccessToken },
+                {
+                    where: {
+                        phone_No: newAccessToken.phone_No,
+                    },
+                }
+            );
 
             req.currentUser = currentUser;
 

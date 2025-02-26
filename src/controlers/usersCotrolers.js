@@ -23,7 +23,7 @@ const allUsers = asyncWrapper(async (req, res) => {
 
     const limit = query.limit || 10;
     const page = query.page || 1;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
     const users = await Person.findAll({
         limit,

@@ -1,23 +1,34 @@
-// src/models/ServiceProviderServices.js
-const { DataTypes } = require("sequelize");
-const { sequelize } = require("../db/sequelize.js");
+const { Model, DataTypes } = require("sequelize");
+const { sequelize } = require("../config/sequelize.js");
 
-const ServiceProviderServices = sequelize.define(
-    "ServiceProviderServices",
+class ServiceProviderServices extends Model {}
+
+// Initialize the model
+ServiceProviderServices.init(
     {
         providerServiceId: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true, // Adjust if needed
-            field: "Provider_Service_ID", // Specify the actual column name in the table
+            field: "providerServiceId", // Specify the actual column name in the table
         },
-        serviceObjId: {
+        
+        serviceProviderId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: "ServiceObj", // Specify the actual column name in the table
+            field: "serviceProviderId",
             references: {
-                model: "Services", // Name of the Services table
-                key: "ServiceId", // Key in the referenced table
+                model: "service_providers", // Name of the Services table
+                key: "serviceProviderId", // Key in the referenced table
+            }, // Specify the actual column name in the table
+        },
+        serviceId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "serviceId", // Specify the actual column name in the table
+            references: {
+                model: "services", // Name of the Services table
+                key: "serviceId", // Key in the referenced table
             },
         },
         description: {
@@ -32,14 +43,16 @@ const ServiceProviderServices = sequelize.define(
         },
     },
     {
-        tableName: "Service_Provider_Services",
+        sequelize,
+        modelName: "ServiceProviderServices",
+        tableName: "service_provider_services",
         timestamps: false,
     }
 );
 
 // Associations
 ServiceProviderServices.associate = (models) => {
-    ServiceProviderServices.belongsTo(models.Services, {
+    ServiceProviderServices.belongsTo(models.services, {
         foreignKey: "serviceObjId",
         as: "serviceObj",
     });

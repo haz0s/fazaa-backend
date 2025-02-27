@@ -1,14 +1,13 @@
 // src/models/User.js
 const { Model, DataTypes } = require("sequelize");
 const { sequelize } = require("../config/sequelize.js");
-const { Person } = require("./Person.js");
 
-class User extends Person {}
+class User extends Model {}
 
 User.init(
     {
         userId: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             primaryKey: true,
         },
         firstName: {
@@ -25,19 +24,21 @@ User.init(
         },
         location: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false,
         },
         nationalNo: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false,
         },
         cachedAvgRating: {
             type: DataTypes.FLOAT,
-            allowNull: true,
+            allowNull: false,
+            defaultValue: 0,
         },
         numOfRating: {
             type: DataTypes.INTEGER,
-            allowNull: true,
+            allowNull: false,
+            defaultValue: 0,
         },
         accessToken: {
             type: DataTypes.STRING,

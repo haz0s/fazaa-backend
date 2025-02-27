@@ -1,6 +1,5 @@
-// src/models/ServiceReport.js
 const { DataTypes } = require("sequelize");
-const { sequelize } = require("../db/sequelize.js"); // Adjust the path as needed
+const { sequelize } = require("../config/sequelize.js"); // Adjust the path as needed
 
 const ServiceReport = sequelize.define(
     "ServiceReport",
@@ -15,7 +14,7 @@ const ServiceReport = sequelize.define(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: "ServiceRequests", // Name of the table
+                model: "service_requests", // Name of the table
                 key: "requestId", // Key in the referenced table
             },
         },
@@ -32,7 +31,7 @@ const ServiceReport = sequelize.define(
             allowNull: false,
         },
         role: {
-            type: DataTypes.BYTE,
+            type: DataTypes.BOOLEAN,
             allowNull: false,
         },
         comments: {
@@ -41,7 +40,7 @@ const ServiceReport = sequelize.define(
         },
     },
     {
-        tableName: "ServiceReports", // Specify the table name if different
+        tableName: "service_reports", // Changed to snake_case for consistency
         timestamps: false, // Set to true if you want createdAt/updatedAt fields
     }
 );

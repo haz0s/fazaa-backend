@@ -1,9 +1,10 @@
-// src/models/ServiceRequest.js
-const { DataTypes } = require("sequelize");
-const { sequelize } = require("../db/sequelize.js"); // Adjust the path as needed
+const { Model, DataTypes } = require("sequelize");
+const { sequelize } = require("../config/sequelize.js"); // Adjust the path as needed
 
-const ServiceRequest = sequelize.define(
-    "ServiceRequest",
+class ServiceRequest extends Model {}
+
+// Initialize the model
+ServiceRequest.init(
     {
         requestId: {
             type: DataTypes.INTEGER,
@@ -15,7 +16,7 @@ const ServiceRequest = sequelize.define(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: "Users", // Name of the User table
+                model: "users", // Name of the User table
                 key: "userId", // Key in the referenced table
             },
         },
@@ -24,12 +25,12 @@ const ServiceRequest = sequelize.define(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: "ServiceProviders", // Name of the ServiceProvider table
-                key: "providerId", // Key in the referenced table
+                model: "service_providers", // Name of the ServiceProvider table
+                key: "serviceProviderId", // Corrected key in the referenced table
             },
         },
         serviceTypeId: {
-            type: DataTypes.FLOAT,
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         dateOfSubmission: {
@@ -41,12 +42,14 @@ const ServiceRequest = sequelize.define(
             allowNull: true,
         },
         status: {
-            type: DataTypes.BYTE,
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
     },
     {
-        tableName: "ServiceRequests", // Specify the table name if different
+        sequelize,
+        modelName: "ServiceRequest",
+        tableName: "service_requests", // Changed to snake_case for consistency
         timestamps: false, // Set to true if you want createdAt/updatedAt fields
     }
 );
@@ -58,7 +61,7 @@ ServiceRequest.associate = (models) => {
         as: "userObj",
     });
     ServiceRequest.belongsTo(models.ServiceProvider, {
-        foreignKey: "providerId",
+        foreignKey: "serviceProviderId", // Ensure this matches the model definition
         as: "providerObj",
     });
 };

@@ -1,14 +1,13 @@
 // src/models/ServiceProvider.js
 const { Model, DataTypes } = require("sequelize");
 const { sequelize } = require("../config/sequelize.js");
-const { Person } = require("./Person.js");
 
-class ServiceProvider extends Person {}
+class ServiceProvider extends Model {}
 
 ServiceProvider.init(
     {
         serviceProviderId: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             primaryKey: true,
         },
         firstName: {
@@ -23,13 +22,23 @@ ServiceProvider.init(
             type: DataTypes.INTEGER,
             allowNull: false,
         },
+        numOfRating: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+        },
+        cachedAvgRating: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+            defaultValue: 0,
+        },
         location: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false,
         },
         nationalNo: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false,
         },
         accessToken: {
             type: DataTypes.STRING,

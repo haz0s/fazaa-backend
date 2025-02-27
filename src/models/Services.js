@@ -1,30 +1,19 @@
-// src/models/Services.js
-const { DataTypes } = require("sequelize");
-const { sequelize } = require("../db/sequelize.js"); // Adjust the path as needed
+const { Model, DataTypes } = require("sequelize");
+const { sequelize } = require("../config/sequelize.js"); // Adjust the path as needed
 
-const Services = sequelize.define(
-    "Services",
+class Service extends Model {}
+
+// Initialize the model
+Service.init(
     {
         serviceId: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
-        providerServiceId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        serviceObj: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
         description: {
             type: DataTypes.STRING,
             allowNull: true,
-        },
-        initialCheckUpCost: {
-            type: DataTypes.FLOAT,
-            allowNull: false,
         },
         serviceName: {
             type: DataTypes.STRING,
@@ -32,9 +21,11 @@ const Services = sequelize.define(
         },
     },
     {
-        tableName: "Services", // Specify the table name if different
+        sequelize,
+        modelName: "Service", // Changed to singular
+        tableName: "services", // Changed to snake_case
         timestamps: false, // Set to true if you want createdAt/updatedAt fields
     }
 );
 
-module.exports = { Services };
+module.exports = { Service };
